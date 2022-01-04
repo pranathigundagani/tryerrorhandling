@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e10e93fb-1c67-4aa4-8bba-8fb0ed311700" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<configuration doc:name="Configuration" doc:id="f70dee6f-11ee-4a17-a5b5-ea9b04de3163" defaultErrorHandler-ref="globalerrorhandlerError_Handler" />
+	<flow name="tryerrorhandlingFlow" doc:id="000618e8-2bdc-487b-8392-b3d75b63c808" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="f1e8365a-4113-44d8-9faa-219f0c413870" config-ref="HTTP_Listener_config" path="/try"/>
+		<flow-ref doc:name="Flow Reference" doc:id="d8a628cc-e821-4361-9ee8-b364a0964281" name="tryerrorhandlingSub_Flow"/>
+	</flow>
+	<sub-flow name="tryerrorhandlingSub_Flow" doc:id="16f6e7fb-b66f-4e6d-a5ce-8f9f766b4c5a" >
+		<try doc:name="Try" doc:id="19691152-8d6a-4688-a9f1-e161ac72b4a9" >
+			<http:request method="GET" doc:name="Request" doc:id="3b8e471e-88fd-4f3e-91b9-18f1ccf8a163" url="hjwgejh"/>
+		</try>
+	</sub-flow>
+	<flow name="tryerrorhandlingFlow1" doc:id="2930c512-af7f-449c-9112-fd0537722fa1" >
+		<http:listener doc:name="Listener" doc:id="c016839c-47c8-451b-b749-55c87c4c76c0" config-ref="HTTP_Listener_config" path="/global">
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<choice doc:name="Choice" doc:id="57425a82-88a5-4d36-85a8-e0c54cd68cde" >
+			<when expression="#[isEmpty(payload)]">
+				<raise-error doc:name="Raise error" doc:id="c7e65eb3-0e09-4787-b43b-7fc77c1be9b8" type="ERROR:PAYLOAD_ERROR" description='"GLOBAL HANDLING"'/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="2fe6f78e-8392-4cc0-a320-1ffa7c450449" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+message:"im in default"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
